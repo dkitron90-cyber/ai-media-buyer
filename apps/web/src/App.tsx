@@ -20,6 +20,8 @@ import { CampaignDetail } from './components/CampaignDetail';
 import { SmartReportUploadWizard } from './components/SmartReportUploadWizard';
 import { CollapsibleSection } from './components/CollapsibleSection';
 import { DemoBanner } from './components/DemoBanner';
+import { PortfolioView } from './components/PortfolioView';
+import { CampaignCompareView } from './components/CampaignCompareView';
 import './styles.css';
 import type { ExperienceMode } from './lib/experienceMode';
 
@@ -29,7 +31,7 @@ type HealthState =
   | { status: 'error'; error: string }
   | { status: 'success'; data: HealthResponse };
 
-type SidebarNavId = 'dashboard' | 'clients' | 'campaigns';
+type SidebarNavId = 'dashboard' | 'clients' | 'campaigns' | 'portfolio' | 'compare';
 
 const NavIconDashboard = () => (
   <svg
@@ -762,24 +764,37 @@ export const App = () => {
   };
 
   const goCompare = () => {
-    goCampaigns();
+    exitCampaignToDashboard();
+    setActiveNav('compare');
+    void loadAllCampaignsList();
+    window.requestAnimationFrame(() => {
+      mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   };
 
   const goPortfolioOverview = () => {
     exitCampaignToDashboard();
-    setActiveNav('dashboard');
+    setActiveNav('portfolio');
+    void loadAllCampaignsList();
+    void loadPortfolioSnapshot();
     window.requestAnimationFrame(() => {
       mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      document.getElementById('dashboard-stats')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
+    });
+  };
+
+  const openCampaignWorkspace = (campaignId: number) => {
+    void handleSelectCampaign(campaignId);
+    setActiveNav('campaigns');
+    window.requestAnimationFrame(() => {
+      mainRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   };
 
   const mainTitle = useMemo(() => {
     if (activeNav === 'clients') return 'Clients';
     if (activeNav === 'dashboard') return 'Dashboard';
+    if (activeNav === 'portfolio') return 'Portfolio';
+    if (activeNav === 'compare') return 'Compare';
     if (selectedCampaign) return selectedCampaign.name;
     return 'Campaigns';
   }, [activeNav, selectedCampaign]);
@@ -789,7 +804,13 @@ export const App = () => {
       return 'Create and manage advertiser accounts';
     }
     if (activeNav === 'dashboard') {
-      return 'Portfolio overview across clients and campaigns';
+      return 'Quick start — clients, imports, and new campaigns';
+    }
+    if (activeNav === 'portfolio') {
+      return 'Health and performance across your full book';
+    }
+    if (activeNav === 'compare') {
+      return 'Side-by-side campaign metrics';
     }
     if (selectedCampaign) {
       return `${selectedClient?.name ?? 'Client'} · Campaign intelligence`;
@@ -891,9 +912,12 @@ export const App = () => {
             <div className="sidebar-nav-label">Intelligence</div>
             <button
               type="button"
-              className="sidebar-nav-item"
+              className={
+                activeNav === 'compare'
+                  ? 'sidebar-nav-item sidebar-nav-item--active'
+                  : 'sidebar-nav-item'
+              }
               onClick={goCompare}
-              title="Open campaigns list — compare by selecting campaigns below"
             >
               <span className="sidebar-nav-item__left">
                 <NavIconCompare />
@@ -903,9 +927,12 @@ export const App = () => {
             </button>
             <button
               type="button"
-              className="sidebar-nav-item"
+              className={
+                activeNav === 'portfolio'
+                  ? 'sidebar-nav-item sidebar-nav-item--active'
+                  : 'sidebar-nav-item'
+              }
               onClick={goPortfolioOverview}
-              title="Portfolio overview metrics on the dashboard"
             >
               <span className="sidebar-nav-item__left">
                 <NavIconChart />
@@ -1036,93 +1063,6 @@ export const App = () => {
           <div className="dashboard-page">
             <section
               className="dashboard-section"
-              aria-labelledby="dashboard-metrics-heading"
-            >
-              <h2 id="dashboard-metrics-heading" className="dashboard-section__title">
-                Portfolio metrics
-              </h2>
-              <div
-                className="dashboard-stats"
-                aria-label="Account overview"
-                id="dashboard-stats"
-              >
-                <div className="dashboard-stat-card">
-                  <div className="dashboard-stat-card__top">
-                    <span className="dashboard-stat-card__icon" aria-hidden>
-                      <StatIconUsers />
-                    </span>
-                    <span className="dashboard-stat-label">Total clients</span>
-                  </div>
-                  <span className="dashboard-stat-value">{clients.length}</span>
-                </div>
-                <div className="dashboard-stat-card">
-                  <div className="dashboard-stat-card__top">
-                    <span className="dashboard-stat-card__icon" aria-hidden>
-                      <StatIconMegaphone />
-                    </span>
-                    <span className="dashboard-stat-label">Total campaigns</span>
-                  </div>
-                  <span className="dashboard-stat-value">
-                    {portfolioTotalCount ?? totalCampaigns}
-                  </span>
-                </div>
-                <div className="dashboard-stat-card dashboard-stat-card--metric">
-                  <div className="dashboard-stat-card__top">
-                    <span className="dashboard-stat-card__icon" aria-hidden>
-                      <StatIconPulse />
-                    </span>
-                    <span className="dashboard-stat-label">Active</span>
-                  </div>
-                  <span className="dashboard-stat-value">{activeCampaignsCount}</span>
-                  <span className="dashboard-stat-sub">Across loaded accounts</span>
-                </div>
-                <div className="dashboard-stat-card dashboard-stat-card--attention">
-                  <div className="dashboard-stat-card__top">
-                    <span
-                      className="dashboard-stat-card__icon dashboard-stat-card__icon--amber"
-                      aria-hidden
-                    >
-                      <StatIconAlert />
-                    </span>
-                    <span className="dashboard-stat-label">Needs attention</span>
-                  </div>
-                  <span className="dashboard-stat-value">
-                    {portfolioStatsLoading ? '…' : (portfolioNeedsAttention ?? '—')}
-                  </span>
-                  <span className="dashboard-stat-sub">High/medium gaps</span>
-                </div>
-                <div className="dashboard-stat-card dashboard-stat-card--success">
-                  <div className="dashboard-stat-card__top">
-                    <span
-                      className="dashboard-stat-card__icon dashboard-stat-card__icon--green"
-                      aria-hidden
-                    >
-                      <StatIconCheck />
-                    </span>
-                    <span className="dashboard-stat-label">Performing well</span>
-                  </div>
-                  <span className="dashboard-stat-value">
-                    {portfolioStatsLoading ? '…' : (portfolioPerformingWell ?? '—')}
-                  </span>
-                  <span className="dashboard-stat-sub">No urgent gaps</span>
-                </div>
-                <div className="dashboard-stat-card dashboard-stat-card--metric">
-                  <div className="dashboard-stat-card__top">
-                    <span className="dashboard-stat-card__icon" aria-hidden>
-                      <StatIconDollar />
-                    </span>
-                    <span className="dashboard-stat-label">Blended CPA</span>
-                  </div>
-                  <span className="dashboard-stat-value">
-                    {portfolioStatsLoading ? '…' : (portfolioBlendedCpa ?? '—')}
-                  </span>
-                  <span className="dashboard-stat-sub">When spend is tracked</span>
-                </div>
-              </div>
-            </section>
-
-            <section
-              className="dashboard-section"
               aria-labelledby="dashboard-actions-heading"
             >
               <div className="dashboard-section__head">
@@ -1131,7 +1071,7 @@ export const App = () => {
                 </h2>
                 <p className="dashboard-section__lede">
                   Upload reports, track campaign memory, and get AI-backed optimization
-                  recommendations across your portfolio.
+                  recommendations.
                 </p>
               </div>
               <div className="dashboard-quick-actions" aria-label="Quick actions">
@@ -1180,9 +1120,60 @@ export const App = () => {
                       : 'Select a client first'}
                   </span>
                 </button>
+                <button
+                  type="button"
+                  className="dashboard-action-card"
+                  onClick={goPortfolioOverview}
+                >
+                  <span className="dashboard-action-card__icon" aria-hidden>
+                    <StatIconDollar />
+                  </span>
+                  <span className="dashboard-action-card__title">Portfolio</span>
+                  <span className="dashboard-action-card__desc">
+                    Health across all campaigns
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="dashboard-action-card"
+                  onClick={goCompare}
+                >
+                  <span className="dashboard-action-card__icon" aria-hidden>
+                    <NavIconCompare />
+                  </span>
+                  <span className="dashboard-action-card__title">Compare</span>
+                  <span className="dashboard-action-card__desc">
+                    Two campaigns side by side
+                  </span>
+                </button>
               </div>
             </section>
           </div>
+        )}
+
+        {activeNav === 'portfolio' && (
+          <PortfolioView
+            clientCount={clients.length}
+            totalCampaigns={portfolioTotalCount ?? allCampaignsList.length}
+            activeCampaigns={activeCampaignsCount}
+            needsAttention={portfolioNeedsAttention}
+            performingWell={portfolioPerformingWell}
+            blendedCpa={portfolioBlendedCpa}
+            statsLoading={portfolioStatsLoading}
+            campaigns={allCampaignsList}
+            campaignsLoading={allCampaignsLoading}
+            getClientName={getClientName}
+            onOpenCampaign={openCampaignWorkspace}
+          />
+        )}
+
+        {activeNav === 'compare' && (
+          <CampaignCompareView
+            campaigns={allCampaignsList}
+            campaignsLoading={allCampaignsLoading}
+            getClientName={getClientName}
+            onOpenCampaign={openCampaignWorkspace}
+          />
         )}
 
         {activeNav === 'clients' && (

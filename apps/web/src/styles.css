@@ -5312,3 +5312,98 @@ select {
   cursor: not-allowed;
 }
 
+.portfolio-page,
+.compare-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.portfolio-roster-table__name {
+  font-weight: 600;
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compare-pickers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 720px) {
+  .compare-pickers {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compare-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.compare-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 900px) {
+  .compare-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compare-column {
+  padding: 1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+  background: var(--bg-elevated);
+}
+
+.compare-column__title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.compare-slot-summary__client {
+  margin: 0 0 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.compare-slot-summary__meta {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+}
+
+.compare-slot-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 1rem;
+  margin: 0 0 0.75rem;
+}
+
+.compare-slot-metrics dt {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.compare-slot-metrics dd {
+  margin: 0.1rem 0 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.compare-diff {
+  margin-top: 0.5rem;
+}
+
