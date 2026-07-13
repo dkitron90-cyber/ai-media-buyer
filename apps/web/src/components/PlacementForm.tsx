@@ -126,7 +126,7 @@ export const PlacementForm = ({ onSubmit }: PlacementFormProps) => {
       {error && <p className="status status-error">{error}</p>}
 
       <div className="action-form-buttons">
-        <button className="btn" type="submit" disabled={submitting}>
+        <button className="button button-primary button-xs" type="submit" disabled={submitting}>
           {submitting ? 'Adding…' : 'Add Placement'}
         </button>
         <button

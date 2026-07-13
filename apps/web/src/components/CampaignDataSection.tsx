@@ -3,14 +3,12 @@ import { DataWindowCard } from './DataWindowCard';
 import { ReadinessCard } from './ReadinessCard';
 import { ReportManager } from './ReportManager';
 import { AnalysisHistory } from './AnalysisHistory';
-import { CampaignAnalysis } from './CampaignAnalysis';
 import { DecisionEnginePanel } from './DecisionEnginePanel';
 import { CampaignTypeTemplatePanel } from './CampaignTypeTemplatePanel';
 import { CampaignChecklistPanel } from './CampaignChecklistPanel';
 import { CampaignGoals } from './CampaignGoals';
 import { CampaignNotes } from './CampaignNotes';
 import { CampaignControlPanel } from './CampaignControlPanel';
-import { CampaignImpactSurface } from './CampaignImpactSurface';
 import { AdvisoryContextPanel } from './AdvisoryContextPanel';
 import type { AnalyzeCampaignResponse } from '../lib/apiClient';
 import type { ExperienceMode } from '../lib/experienceMode';
@@ -22,7 +20,6 @@ export interface CampaignDataSectionProps {
   refreshTrigger: number;
   onRunAnalysis: () => Promise<AnalyzeCampaignResponse | undefined>;
   analyzeGenerationResult: AnalyzeCampaignResponse | null;
-  onAnalysisComplete: () => void;
   onOpenClientImport?: () => void;
   onCampaignMetaUpdated?: () => void;
   focusSettingKey?: string | null;
@@ -33,7 +30,7 @@ export interface CampaignDataSectionProps {
 }
 
 /**
- * Secondary tooling behind one collapsed “Advanced” surface.
+ * Secondary tooling — collapsed by default. Primary workflow stays in playbook + execution.
  */
 export const CampaignDataSection = ({
   campaignId,
@@ -42,7 +39,6 @@ export const CampaignDataSection = ({
   refreshTrigger,
   onRunAnalysis,
   analyzeGenerationResult,
-  onAnalysisComplete,
   onOpenClientImport,
   onCampaignMetaUpdated,
   focusSettingKey,
@@ -54,7 +50,7 @@ export const CampaignDataSection = ({
   return (
     <CollapsibleSection
       title="More"
-      subtitle="Reports, settings, full diagnosis"
+      subtitle="Reports, settings, diagnostics"
       defaultCollapsed
       collapsed={moreExpanded === undefined ? undefined : !moreExpanded}
       onCollapsedChange={
@@ -64,46 +60,8 @@ export const CampaignDataSection = ({
       }
       className="data-analysis-collapsible"
     >
-      <div className="data-analysis-stack">
-        <div className="data-analysis__block">
-          <h3 className="data-analysis__h">Campaign control</h3>
-          <CampaignControlPanel
-            campaignId={campaignId}
-            campaignTypeHint={campaignType}
-            onSaved={onCampaignMetaUpdated}
-            focusSettingKey={focusSettingKey}
-            onFocusSettingConsumed={onFocusSettingConsumed}
-            compact
-          />
-        </div>
-
-        <div className="data-analysis__block">
-          <h3 className="data-analysis__h">AI summary</h3>
-          <CampaignImpactSurface
-            campaignId={campaignId}
-            refreshTrigger={refreshTrigger}
-            compact
-          />
-        </div>
-
-        <div className="data-analysis__block">
-          <h3 className="data-analysis__h">Your business</h3>
-          <AdvisoryContextPanel
-            clientId={clientId}
-            onSaved={onCampaignMetaUpdated}
-          />
-        </div>
-
-        <div className="data-analysis__block">
-          <h3 className="data-analysis__h">Data timing & coverage</h3>
-          <div className="data-trust-grid">
-            <DataWindowCard campaignId={campaignId} />
-            <ReadinessCard campaignId={campaignId} experienceMode={experienceMode} />
-          </div>
-        </div>
-
+      <div className="data-analysis-stack data-analysis-stack--quiet">
         <div id="section-reports" className="data-analysis__block">
-          <h3 className="data-analysis__h">Reports & uploads</h3>
           <ReportManager
             campaignId={campaignId}
             refreshTrigger={refreshTrigger}
@@ -111,20 +69,47 @@ export const CampaignDataSection = ({
           />
         </div>
 
-        <div className="data-analysis__block">
-          <h3 className="data-analysis__h">Analysis history</h3>
-          <AnalysisHistory
-            campaignId={campaignId}
-            refreshTrigger={refreshTrigger}
-          />
-        </div>
+        <CollapsibleSection
+          title="Setup"
+          subtitle="Settings, business context, goals"
+          defaultCollapsed
+        >
+          <div className="data-analysis__block" id="section-settings">
+            <CampaignControlPanel
+              campaignId={campaignId}
+              campaignTypeHint={campaignType}
+              onSaved={onCampaignMetaUpdated}
+              focusSettingKey={focusSettingKey}
+              onFocusSettingConsumed={onFocusSettingConsumed}
+              compact
+            />
+          </div>
+          <div className="data-analysis__block">
+            <AdvisoryContextPanel
+              clientId={clientId}
+              onSaved={onCampaignMetaUpdated}
+            />
+          </div>
+          <div className="data-trust-grid">
+            <CampaignGoals campaignId={campaignId} />
+            <CampaignNotes campaignId={campaignId} />
+          </div>
+        </CollapsibleSection>
 
-        <div id="section-decision-engine" className="data-analysis__block">
-          <CollapsibleSection
-            title="Decision engine"
-            subtitle="AI diagnosis — expand for full detail"
-            defaultCollapsed
-          >
+        <CollapsibleSection
+          title="Diagnostics"
+          subtitle="Data health, AI history"
+          defaultCollapsed
+        >
+          <div className="data-trust-grid">
+            <ReadinessCard
+              campaignId={campaignId}
+              experienceMode={experienceMode}
+              compact
+            />
+            <DataWindowCard campaignId={campaignId} compact />
+          </div>
+          <div id="section-decision-engine" className="data-analysis__block">
             <DecisionEnginePanel
               campaignId={campaignId}
               insightRefresh={refreshTrigger}
@@ -132,34 +117,25 @@ export const CampaignDataSection = ({
               analyzeGenerationResult={analyzeGenerationResult}
               showTitle={false}
             />
-          </CollapsibleSection>
-        </div>
-
-        <div id="section-checklist" className="data-analysis__block">
-          <h3 className="data-analysis__h">Template & checklist</h3>
-          <div className="reference-stack reference-stack--compact">
-            <CampaignTypeTemplatePanel campaignId={campaignId} />
-            <CampaignChecklistPanel campaignId={campaignId} />
           </div>
-        </div>
-
-        <div className="data-analysis__block">
-          <h3 className="data-analysis__h">Goals & notes</h3>
-          <div className="data-trust-grid">
-            <CampaignGoals campaignId={campaignId} />
-            <CampaignNotes campaignId={campaignId} />
+          <div className="data-analysis__block">
+            <AnalysisHistory
+              campaignId={campaignId}
+              refreshTrigger={refreshTrigger}
+            />
           </div>
-        </div>
+        </CollapsibleSection>
 
-        <div className="data-analysis__block">
-          <h3 className="data-analysis__h">Raw analysis</h3>
-          <CampaignAnalysis
-            campaignId={campaignId}
-            runCampaignAnalysis={onRunAnalysis}
-            onAnalysisComplete={onAnalysisComplete}
-            experienceMode={experienceMode}
-          />
-        </div>
+        <CollapsibleSection
+          title="Playbook reference"
+          subtitle="Type guide and launch checklist"
+          defaultCollapsed
+        >
+          <div id="section-checklist" className="reference-stack reference-stack--compact">
+            <CampaignTypeTemplatePanel campaignId={campaignId} summaryOnly />
+            <CampaignChecklistPanel campaignId={campaignId} compact />
+          </div>
+        </CollapsibleSection>
       </div>
     </CollapsibleSection>
   );

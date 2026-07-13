@@ -5,6 +5,8 @@ import { isJuniorMode, readinessLabelGuide } from '../lib/experienceMode';
 interface AnalysisReadinessProps {
   readiness?: ReadinessData | null;
   experienceMode?: ExperienceMode;
+  /** Shorter panel for diagnostics — metrics + top gaps only */
+  compact?: boolean;
 }
 
 const LABEL_CONFIG: Record<
@@ -31,6 +33,7 @@ const LABEL_CONFIG: Record<
 export const AnalysisReadiness = ({
   readiness,
   experienceMode = 'senior',
+  compact = false,
 }: AnalysisReadinessProps) => {
   const junior = isJuniorMode(experienceMode);
   if (!readiness) {
@@ -49,6 +52,9 @@ export const AnalysisReadiness = ({
   }
 
   const config = LABEL_CONFIG[readiness.sufficiencyLabel];
+  const topReasons = compact
+    ? readiness.reasons.slice(0, 2)
+    : readiness.reasons;
 
   return (
     <div className="readiness-panel">
@@ -56,13 +62,14 @@ export const AnalysisReadiness = ({
         <span className="readiness-title">Data check</span>
         <span className={config.pillClass}>{config.text}</span>
       </div>
-      <p className="readiness-description">{config.description}</p>
-      {junior && readinessLabelGuide[readiness.sufficiencyLabel] && (
+      {!compact && <p className="readiness-description">{config.description}</p>}
+      {junior && !compact && readinessLabelGuide[readiness.sufficiencyLabel] && (
         <p className="experience-junior-hint">
           {readinessLabelGuide[readiness.sufficiencyLabel]}
         </p>
       )}
 
+      {!compact && (
       <div className="readiness-metrics">
         <div className="readiness-metric">
           <span className="readiness-metric-value">
@@ -89,15 +96,22 @@ export const AnalysisReadiness = ({
           <span className="readiness-metric-label">Conversions</span>
         </div>
       </div>
+      )}
 
-      {readiness.reasons.length > 0 && (
+      {topReasons.length > 0 && (
         <ul className="readiness-reasons">
-          {readiness.reasons.map((reason, i) => (
+          {topReasons.map((reason, i) => (
             <li key={i}>{reason}</li>
           ))}
         </ul>
       )}
+      {compact && readiness.reasons.length > 2 && (
+        <p className="list-item-meta">
+          +{readiness.reasons.length - 2} more — expand diagnostics for full list
+        </p>
+      )}
 
+      {!compact && (
       <div className="readiness-reports">
         <span className="readiness-metric-label">Reports</span>
         <div className="pill-row">
@@ -117,6 +131,7 @@ export const AnalysisReadiness = ({
           })}
         </div>
       </div>
+      )}
     </div>
   );
 };

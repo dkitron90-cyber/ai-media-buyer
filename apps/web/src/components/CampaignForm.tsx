@@ -160,7 +160,7 @@ export const CampaignForm = ({ clientId, onCreated }: CampaignFormProps) => {
 
       <button
         type="submit"
-        className="btn"
+        className="button button-primary button-xs"
         disabled={submitting || !name.trim() || !typeCode.trim()}
       >
         {submitting ? 'Creating…' : 'Create campaign'}

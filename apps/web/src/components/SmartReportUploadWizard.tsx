@@ -7,6 +7,7 @@ import { ReportCampaignMappingStep } from './reportImport/ReportCampaignMappingS
 import { ReportImportReviewStep } from './reportImport/ReportImportReviewStep';
 import { ReportImportResultStep } from './reportImport/ReportImportResultStep';
 import { buildMappingsFromInspect, type SmartUploadMappingEntry } from './reportImport/types';
+import { IMPORT_WIZARD_STEPS, WizardStepper } from './WizardStepper';
 
 export interface SmartReportUploadWizardProps {
   isOpen: boolean;
@@ -155,7 +156,9 @@ export const SmartReportUploadWizard = ({
 
   return (
     <div className="modal-backdrop">
-      {step === 'upload' && (
+      <div className="wizard-shell">
+        <WizardStepper steps={[...IMPORT_WIZARD_STEPS]} currentStepId={step} />
+        {step === 'upload' && (
         <ReportUploadStep
           clientId={clientId}
           clientName={clientName}
@@ -224,6 +227,7 @@ export const SmartReportUploadWizard = ({
           onDone={handleClose}
         />
       )}
+      </div>
     </div>
   );
 };

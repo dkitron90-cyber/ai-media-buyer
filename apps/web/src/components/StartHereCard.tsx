@@ -55,7 +55,9 @@ export const StartHereCard = ({
       <p className="start-here-card__kicker">Start here</p>
       <h2 className="start-here-card__title">{item.title}</h2>
       <p className="start-here-card__reason">{item.reason}</p>
-      <p className="start-here-card__impact">{item.estimatedImpact}</p>
+      {junior && item.estimatedImpact && (
+        <p className="start-here-card__impact">{item.estimatedImpact}</p>
+      )}
       {junior && item.blockingReason && (
         <p className="start-here-card__junior-hint experience-junior-hint">
           Why blocked: {item.blockingReason}

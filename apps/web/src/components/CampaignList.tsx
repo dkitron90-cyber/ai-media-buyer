@@ -122,13 +122,6 @@ export const CampaignList = ({
 
             <p className="campaign-card-targets">{targetSummary}</p>
 
-            <p className="campaign-card-insight">
-              <span className="campaign-card-insight-label">AI insight</span>
-              <span className="campaign-card-insight-text">
-                No AI analysis yet.
-              </span>
-            </p>
-
             <div className="campaign-card-footer">
               <span className="campaign-card-date">Created {createdAtLabel}</span>
               <button

@@ -143,6 +143,62 @@ const BrainLogoIcon = () => (
   </svg>
 );
 
+const StatIconUsers = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const StatIconMegaphone = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+    <path d="M3 11l18-5v12L3 13v-2z" />
+    <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+  </svg>
+);
+
+const StatIconPulse = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+  </svg>
+);
+
+const StatIconAlert = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+
+const StatIconCheck = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
+
+const StatIconDollar = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+    <line x1="12" y1="1" x2="12" y2="23" />
+    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+  </svg>
+);
+
+const ActionIconUpload = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+  </svg>
+);
+
+const ActionIconPlus = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
 export const App = () => {
   const [health, setHealth] = useState<HealthState>({ status: 'idle' });
   const [clients, setClients] = useState<Client[]>([]);
@@ -733,14 +789,12 @@ export const App = () => {
       return 'Create and manage advertiser accounts';
     }
     if (activeNav === 'dashboard') {
-      return 'Your Google Ads media buying command center';
+      return 'Portfolio overview across clients and campaigns';
     }
     if (selectedCampaign) {
       return `${selectedClient?.name ?? 'Client'} · Campaign intelligence`;
     }
-    return selectedClient
-      ? `Campaigns for ${selectedClient.name}`
-      : 'Select a client in the sidebar to load campaigns.';
+    return 'Browse, import, and analyze campaigns across clients';
   }, [activeNav, selectedCampaign, selectedClient]);
 
   return (
@@ -933,54 +987,6 @@ export const App = () => {
         <DemoBanner
           health={health.status === 'success' ? health.data : null}
         />
-        {activeNav === 'dashboard' && (
-          <div
-            className="dashboard-stats"
-            aria-label="Account overview"
-            id="dashboard-stats"
-          >
-            <div className="dashboard-stat-card">
-              <span className="dashboard-stat-label">Total clients</span>
-              <span className="dashboard-stat-value">{clients.length}</span>
-            </div>
-            <div className="dashboard-stat-card">
-              <span className="dashboard-stat-label">Total campaigns</span>
-              <span className="dashboard-stat-value">
-                {portfolioTotalCount ?? totalCampaigns}
-              </span>
-            </div>
-            <div className="dashboard-stat-card">
-              <span className="dashboard-stat-label">Active</span>
-              <span className="dashboard-stat-value">{activeCampaignsCount}</span>
-              <span className="dashboard-stat-sub">Across loaded accounts</span>
-            </div>
-            <div className="dashboard-stat-card">
-              <span className="dashboard-stat-label">Needs attention</span>
-              <span className="dashboard-stat-value">
-                {portfolioStatsLoading ? '…' : (portfolioNeedsAttention ?? '—')}
-              </span>
-              <span className="dashboard-stat-sub">
-                High/medium gap count (API)
-              </span>
-            </div>
-            <div className="dashboard-stat-card">
-              <span className="dashboard-stat-label">Performing well</span>
-              <span className="dashboard-stat-value">
-                {portfolioStatsLoading ? '…' : (portfolioPerformingWell ?? '—')}
-              </span>
-              <span className="dashboard-stat-sub">
-                Strong/directional readiness, no urgent gaps
-              </span>
-            </div>
-            <div className="dashboard-stat-card">
-              <span className="dashboard-stat-label">Blended CPA</span>
-              <span className="dashboard-stat-value">
-                {portfolioStatsLoading ? '…' : (portfolioBlendedCpa ?? '—')}
-              </span>
-              <span className="dashboard-stat-sub">When spend data is tracked</span>
-            </div>
-          </div>
-        )}
 
         <header className="main-header">
           <div>
@@ -1007,7 +1013,7 @@ export const App = () => {
             {(activeNav === 'dashboard' || activeNav === 'campaigns') && (
               <button
                 type="button"
-                className="button button-primary button-xs"
+                className="button button-cta button-xs"
                 onClick={handleQuickNewCampaign}
                 disabled={!selectedClientId}
               >
@@ -1027,64 +1033,206 @@ export const App = () => {
         </header>
 
         {activeNav === 'dashboard' && (
-          <section className="card main-page-hint" aria-label="Getting started">
-            <h2 className="main-page-hint-title">Workspace</h2>
-            <p className="main-page-hint-body">
-              Use <strong>Clients</strong> to add accounts, <strong>Campaigns</strong>{' '}
-              to work on performance and AI analysis, and{' '}
-              <strong>Import Report</strong> to upload Google Ads CSVs—similar to{' '}
-              <a
-                href="https://media-brain-pro.base44.app/"
-                target="_blank"
-                rel="noreferrer"
+          <div className="dashboard-page">
+            <section
+              className="dashboard-section"
+              aria-labelledby="dashboard-metrics-heading"
+            >
+              <h2 id="dashboard-metrics-heading" className="dashboard-section__title">
+                Portfolio metrics
+              </h2>
+              <div
+                className="dashboard-stats"
+                aria-label="Account overview"
+                id="dashboard-stats"
               >
-                Media Brain
-              </a>
-              &apos;s split navigation.
-            </p>
-          </section>
+                <div className="dashboard-stat-card">
+                  <div className="dashboard-stat-card__top">
+                    <span className="dashboard-stat-card__icon" aria-hidden>
+                      <StatIconUsers />
+                    </span>
+                    <span className="dashboard-stat-label">Total clients</span>
+                  </div>
+                  <span className="dashboard-stat-value">{clients.length}</span>
+                </div>
+                <div className="dashboard-stat-card">
+                  <div className="dashboard-stat-card__top">
+                    <span className="dashboard-stat-card__icon" aria-hidden>
+                      <StatIconMegaphone />
+                    </span>
+                    <span className="dashboard-stat-label">Total campaigns</span>
+                  </div>
+                  <span className="dashboard-stat-value">
+                    {portfolioTotalCount ?? totalCampaigns}
+                  </span>
+                </div>
+                <div className="dashboard-stat-card dashboard-stat-card--metric">
+                  <div className="dashboard-stat-card__top">
+                    <span className="dashboard-stat-card__icon" aria-hidden>
+                      <StatIconPulse />
+                    </span>
+                    <span className="dashboard-stat-label">Active</span>
+                  </div>
+                  <span className="dashboard-stat-value">{activeCampaignsCount}</span>
+                  <span className="dashboard-stat-sub">Across loaded accounts</span>
+                </div>
+                <div className="dashboard-stat-card dashboard-stat-card--attention">
+                  <div className="dashboard-stat-card__top">
+                    <span
+                      className="dashboard-stat-card__icon dashboard-stat-card__icon--amber"
+                      aria-hidden
+                    >
+                      <StatIconAlert />
+                    </span>
+                    <span className="dashboard-stat-label">Needs attention</span>
+                  </div>
+                  <span className="dashboard-stat-value">
+                    {portfolioStatsLoading ? '…' : (portfolioNeedsAttention ?? '—')}
+                  </span>
+                  <span className="dashboard-stat-sub">High/medium gaps</span>
+                </div>
+                <div className="dashboard-stat-card dashboard-stat-card--success">
+                  <div className="dashboard-stat-card__top">
+                    <span
+                      className="dashboard-stat-card__icon dashboard-stat-card__icon--green"
+                      aria-hidden
+                    >
+                      <StatIconCheck />
+                    </span>
+                    <span className="dashboard-stat-label">Performing well</span>
+                  </div>
+                  <span className="dashboard-stat-value">
+                    {portfolioStatsLoading ? '…' : (portfolioPerformingWell ?? '—')}
+                  </span>
+                  <span className="dashboard-stat-sub">No urgent gaps</span>
+                </div>
+                <div className="dashboard-stat-card dashboard-stat-card--metric">
+                  <div className="dashboard-stat-card__top">
+                    <span className="dashboard-stat-card__icon" aria-hidden>
+                      <StatIconDollar />
+                    </span>
+                    <span className="dashboard-stat-label">Blended CPA</span>
+                  </div>
+                  <span className="dashboard-stat-value">
+                    {portfolioStatsLoading ? '…' : (portfolioBlendedCpa ?? '—')}
+                  </span>
+                  <span className="dashboard-stat-sub">When spend is tracked</span>
+                </div>
+              </div>
+            </section>
+
+            <section
+              className="dashboard-section"
+              aria-labelledby="dashboard-actions-heading"
+            >
+              <div className="dashboard-section__head">
+                <h2 id="dashboard-actions-heading" className="dashboard-section__title">
+                  Get started
+                </h2>
+                <p className="dashboard-section__lede">
+                  Upload reports, track campaign memory, and get AI-backed optimization
+                  recommendations across your portfolio.
+                </p>
+              </div>
+              <div className="dashboard-quick-actions" aria-label="Quick actions">
+                <button
+                  type="button"
+                  className="dashboard-action-card"
+                  onClick={handleQuickNewClient}
+                >
+                  <span className="dashboard-action-card__icon" aria-hidden>
+                    <StatIconUsers />
+                  </span>
+                  <span className="dashboard-action-card__title">Add client</span>
+                  <span className="dashboard-action-card__desc">
+                    Create a new advertiser account
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="dashboard-action-card"
+                  onClick={goImport}
+                >
+                  <span
+                    className="dashboard-action-card__icon dashboard-action-card__icon--cta"
+                    aria-hidden
+                  >
+                    <ActionIconUpload />
+                  </span>
+                  <span className="dashboard-action-card__title">Import report</span>
+                  <span className="dashboard-action-card__desc">
+                    Upload Google Ads CSV exports
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="dashboard-action-card"
+                  onClick={handleQuickNewCampaign}
+                  disabled={!selectedClientId}
+                >
+                  <span className="dashboard-action-card__icon" aria-hidden>
+                    <ActionIconPlus />
+                  </span>
+                  <span className="dashboard-action-card__title">New campaign</span>
+                  <span className="dashboard-action-card__desc">
+                    {selectedClient
+                      ? `For ${selectedClient.name}`
+                      : 'Select a client first'}
+                  </span>
+                </button>
+              </div>
+            </section>
+          </div>
         )}
 
         {activeNav === 'clients' && (
-          <section className="card card-overview main-page-section" id="page-clients">
-            <div className="card-header-row">
-              <h2 id="page-clients-title">All clients</h2>
-              <span className="pill pill-muted">{clients.length}</span>
-            </div>
-            {clientsLoading && (
-              <p className="status status-loading">Loading clients…</p>
-            )}
-            {clientsError && (
-              <p className="status status-error">{clientsError}</p>
-            )}
-            {!clientsLoading && !clientsError && (
-              <>
-                <ClientForm onCreated={handleClientCreated} />
-                <div className="main-page-clients-list">
-                  <ClientList
-                    clients={clients}
-                    selectedClientId={selectedClientId}
-                    onSelectClient={handleSelectClient}
-                    onEditClient={handleEditClientRequested}
-                    onDeleteClient={handleDeleteClientRequested}
-                  />
-                </div>
-              </>
-            )}
-          </section>
+          <div className="page-layout">
+            <section className="page-section card card-overview" id="page-clients">
+              <div className="page-section__head card-header-row">
+                <h2 id="page-clients-title" className="page-section__title">
+                  All clients
+                </h2>
+                <span className="pill pill-muted">{clients.length}</span>
+              </div>
+              <p className="page-section__lede">
+                Add advertiser accounts, then select one in the sidebar to manage
+                campaigns and imports.
+              </p>
+              {clientsLoading && (
+                <p className="status status-loading">Loading clients…</p>
+              )}
+              {clientsError && (
+                <p className="status status-error">{clientsError}</p>
+              )}
+              {!clientsLoading && !clientsError && (
+                <>
+                  <ClientForm onCreated={handleClientCreated} />
+                  <div className="main-page-clients-list">
+                    <ClientList
+                      clients={clients}
+                      selectedClientId={selectedClientId}
+                      onSelectClient={handleSelectClient}
+                      onEditClient={handleEditClientRequested}
+                      onDeleteClient={handleDeleteClientRequested}
+                    />
+                  </div>
+                </>
+              )}
+            </section>
+          </div>
         )}
 
         {activeNav === 'campaigns' && (
-          <>
-            <section className="card card-overview" id="section-campaigns">
-              <div className="card-header-row">
-                <h2>All campaigns</h2>
+          <div className="page-layout">
+            <section className="page-section card card-overview" id="section-campaigns">
+              <div className="page-section__head card-header-row">
+                <h2 className="page-section__title">All campaigns</h2>
                 <span className="pill pill-muted">
                   {allCampaignsLoading ? '…' : allCampaignsList.length}
                 </span>
               </div>
-              <p className="main-page-campaigns-lead">
-                All campaigns across your clients—including those created from{' '}
+              <p className="page-section__lede main-page-campaigns-lead">
+                Campaigns across your clients—including those created from{' '}
                 <button
                   type="button"
                   className="button button-ghost button-xs"
@@ -1092,7 +1240,7 @@ export const App = () => {
                 >
                   report imports
                 </button>
-                . Select a row to open detail.
+                . Select a card to open intelligence and analysis.
               </p>
 
               {selectedClientId != null && (
@@ -1148,8 +1296,8 @@ export const App = () => {
             </section>
 
             {campaignDetailError && (
-              <section className="card">
-                <h2>Campaign detail</h2>
+              <section className="page-section card">
+                <h2 className="page-section__title">Campaign detail</h2>
                 <p className="status status-error">{campaignDetailError}</p>
               </section>
             )}
@@ -1184,7 +1332,7 @@ export const App = () => {
                 })();
               }}
             />
-          </>
+          </div>
         )}
 
         {clientBeingEdited && (

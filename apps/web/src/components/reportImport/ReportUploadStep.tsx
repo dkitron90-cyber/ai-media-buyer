@@ -113,7 +113,7 @@ export const ReportUploadStep = ({
           </button>
           <button
             type="button"
-            className="button button-primary button-xs"
+            className="button button-cta button-xs"
             onClick={onInspect}
             disabled={!file || loading || noClient}
           >

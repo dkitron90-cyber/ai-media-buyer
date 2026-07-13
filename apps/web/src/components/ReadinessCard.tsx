@@ -5,6 +5,7 @@ import { AnalysisReadiness } from './AnalysisReadiness';
 interface ReadinessCardProps {
   campaignId: number;
   experienceMode?: import('../lib/experienceMode').ExperienceMode;
+  compact?: boolean;
 }
 
 type State =
@@ -16,6 +17,7 @@ type State =
 export const ReadinessCard = ({
   campaignId,
   experienceMode = 'senior',
+  compact = false,
 }: ReadinessCardProps) => {
   const [state, setState] = useState<State>({ status: 'idle' });
 
@@ -65,7 +67,7 @@ export const ReadinessCard = ({
 
   return (
     <section className="card card-compact">
-      <AnalysisReadiness readiness={state.data} experienceMode={experienceMode} />
+      <AnalysisReadiness readiness={state.data} experienceMode={experienceMode} compact={compact} />
     </section>
   );
 };

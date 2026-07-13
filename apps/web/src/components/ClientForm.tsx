@@ -43,7 +43,7 @@ export const ClientForm = ({ onCreated }: ClientFormProps) => {
       </label>
       <button
         type="submit"
-        className="btn"
+        className="button button-primary button-xs"
         disabled={submitting || !name.trim()}
       >
         {submitting ? 'Creating…' : 'Create client'}

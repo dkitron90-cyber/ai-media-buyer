@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { IconChevronDown, IconChevronUp } from '../lib/icons';
 
 interface CollapsibleSectionProps {
   title: string;
@@ -44,7 +45,13 @@ export const CollapsibleSection = ({
           <span className="collapsible-title">{title}</span>
           {subtitle && <span className="collapsible-subtitle">{subtitle}</span>}
         </div>
-        <span className="collapsible-icon">{collapsed ? '▾' : '▴'}</span>
+        <span className="collapsible-icon" aria-hidden>
+          {collapsed ? (
+            <IconChevronDown className="collapsible-icon__svg" />
+          ) : (
+            <IconChevronUp className="collapsible-icon__svg" />
+          )}
+        </span>
       </button>
       <div
         className={

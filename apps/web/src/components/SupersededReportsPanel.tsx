@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ActiveReport } from '../lib/apiClient';
+import { IconChevronDown, IconChevronRight } from '../lib/icons';
 
 interface SupersededReportsPanelProps {
   supersededReports: ActiveReport[];
@@ -31,7 +32,13 @@ export const SupersededReportsPanel = ({
         <span className="superseded-toggle-label">
           Superseded reports ({supersededReports.length})
         </span>
-        <span className="superseded-toggle-icon">{expanded ? '▾' : '▸'}</span>
+        <span className="superseded-toggle-icon" aria-hidden>
+          {expanded ? (
+            <IconChevronDown className="superseded-toggle-icon__svg" />
+          ) : (
+            <IconChevronRight className="superseded-toggle-icon__svg" />
+          )}
+        </span>
       </button>
 
       {expanded && (

@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiClient, type CampaignTypeFull } from '../lib/apiClient';
+import { CollapsibleSection } from './CollapsibleSection';
 
 interface CampaignTypeTemplatePanelProps {
   campaignId: number;
+  summaryOnly?: boolean;
 }
 
 export const CampaignTypeTemplatePanel = ({
   campaignId,
+  summaryOnly = false,
 }: CampaignTypeTemplatePanelProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,11 +60,8 @@ export const CampaignTypeTemplatePanel = ({
     );
   }
 
-  return (
+  const fullDetail = (
     <div className="stack gap-md campaign-type-template-panel">
-      <p className="insight-secondary">
-        Registry type: <strong>{canonicalType}</strong> — {detail.label}
-      </p>
       <section>
         <h4 className="template-subheading">Description</h4>
         <p className="modal-body">{detail.description}</p>
@@ -79,17 +79,6 @@ export const CampaignTypeTemplatePanel = ({
       </section>
 
       <section>
-        <h4 className="template-subheading">Recommended report types</h4>
-        <div className="template-tag-list" role="list">
-          {detail.recommendedReportTypes.map((t) => (
-            <span key={t} className="pill pill-ok" role="listitem">
-              {t}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      <section>
         <h4 className="template-subheading">Optimization priorities</h4>
         <ol className="list ordered-template-list">
           {detail.optimizationPriorities.map((p, i) => (
@@ -100,89 +89,45 @@ export const CampaignTypeTemplatePanel = ({
         </ol>
       </section>
 
-      <section>
-        <h4 className="template-subheading">Special warnings</h4>
-        <ul className="list">
-          {detail.specialWarnings.map((w, i) => (
-            <li key={i} className="list-item status status-loading">
-              {w}
-            </li>
-          ))}
-        </ul>
-      </section>
+      {detail.specialWarnings.length > 0 && (
+        <section>
+          <h4 className="template-subheading">Warnings</h4>
+          <ul className="list">
+            {detail.specialWarnings.map((w, i) => (
+              <li key={i} className="list-item">
+                {w}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  );
 
-      <section>
-        <h4 className="template-subheading">Launch checklist</h4>
-        <ul className="list">
-          {detail.defaultChecklistTemplate.launch.map((item) => (
-            <li key={item.id} className="list-item">
-              <span className="list-item-title">{item.label}</span>
-              {item.detail ? (
-                <span className="list-item-meta">{item.detail}</span>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section>
-        <h4 className="template-subheading">Optimization checklist</h4>
-        <ul className="list">
-          {detail.defaultChecklistTemplate.optimization.map((item) => (
-            <li key={item.id} className="list-item">
-              <span className="list-item-title">{item.label}</span>
-              {item.detail ? (
-                <span className="list-item-meta">{item.detail}</span>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section>
-        <h4 className="template-subheading">Expected reports (summary)</h4>
-        <p className="modal-body">
-          {detail.defaultPlaybookTemplate.expectedReportsSummary}
+  if (summaryOnly) {
+    return (
+      <div className="stack gap-sm">
+        <p className="insight-secondary">
+          <strong>{canonicalType}</strong> — {detail.label}.{' '}
+          {detail.importantReportTypes.length} important report types.
         </p>
-      </section>
+        <CollapsibleSection
+          title="Full type guide"
+          subtitle="Reports, priorities, warnings"
+          defaultCollapsed
+        >
+          {fullDetail}
+        </CollapsibleSection>
+      </div>
+    );
+  }
 
-      <section>
-        <h4 className="template-subheading">Missing report — strong warnings</h4>
-        <ul className="list">
-          {detail.defaultPlaybookTemplate.missingReportSeverity.strongWarnings.map(
-            (w, i) => (
-              <li key={i} className="list-item status status-error">
-                {w}
-              </li>
-            )
-          )}
-        </ul>
-      </section>
-
-      <section>
-        <h4 className="template-subheading">Missing report — moderate warnings</h4>
-        <ul className="list">
-          {detail.defaultPlaybookTemplate.missingReportSeverity.moderateWarnings.map(
-            (w, i) => (
-              <li key={i} className="list-item status status-loading">
-                {w}
-              </li>
-            )
-          )}
-        </ul>
-      </section>
-
-      <section>
-        <h4 className="template-subheading">AI / playbook guidance</h4>
-        <ul className="list">
-          {detail.defaultPlaybookTemplate.aiPlaybookGuidance.map((g, i) => (
-            <li key={i} className="list-item">
-              {g}
-            </li>
-          ))}
-        </ul>
-      </section>
-
+  return (
+    <div className="stack gap-sm">
+      <p className="insight-secondary">
+        Registry type: <strong>{canonicalType}</strong> — {detail.label}
+      </p>
+      {fullDetail}
       <button
         type="button"
         className="button button-ghost button-xs"

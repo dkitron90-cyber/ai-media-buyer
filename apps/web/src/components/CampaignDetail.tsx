@@ -6,7 +6,6 @@ import { ExecutionTabs } from './ExecutionTabs';
 import { CampaignDataSection } from './CampaignDataSection';
 import { CampaignPlaybookSurface } from './CampaignPlaybookSurface';
 import type { ExperienceMode } from '../lib/experienceMode';
-import { isJuniorMode } from '../lib/experienceMode';
 
 interface CampaignDetailProps {
   campaign: Campaign | null;
@@ -40,7 +39,7 @@ export const CampaignDetail = ({
   const [analyzeRunning, setAnalyzeRunning] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [settingsFocusKey, setSettingsFocusKey] = useState<string | null>(null);
-  const [moreExpanded, setMoreExpanded] = useState(() => isJuniorMode(experienceMode));
+  const [moreExpanded, setMoreExpanded] = useState(false);
 
   const scrollToSection = useCallback((sectionId: string) => {
     const moreSectionIds = new Set([
@@ -75,10 +74,6 @@ export const CampaignDetail = ({
   }, [campaign?.id]);
 
   useEffect(() => {
-    setMoreExpanded(isJuniorMode(experienceMode));
-  }, [campaign?.id, experienceMode]);
-
-  useEffect(() => {
     if (externalRefreshKey > 0) {
       setHistoryRefresh((n) => n + 1);
     }
@@ -107,8 +102,8 @@ export const CampaignDetail = ({
 
   if (!campaign) {
     return (
-      <section className="card campaign-detail-empty">
-        <h2>Campaign</h2>
+      <section className="card campaign-detail-empty page-section">
+        <h2 className="page-section__title">Campaign</h2>
         {isLoading ? (
           <p className="status status-loading">Loading campaign…</p>
         ) : (
@@ -170,7 +165,6 @@ export const CampaignDetail = ({
         refreshTrigger={historyRefresh}
         onRunAnalysis={handleRunAnalysis}
         analyzeGenerationResult={analyzeGenerationResult}
-        onAnalysisComplete={handleAnalysisComplete}
         onOpenClientImport={onOpenClientImport}
         onCampaignMetaUpdated={onCampaignMetaUpdated}
         focusSettingKey={settingsFocusKey}

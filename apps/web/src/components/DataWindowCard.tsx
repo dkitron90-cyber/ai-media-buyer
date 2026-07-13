@@ -9,6 +9,7 @@ import { DataWindowReportRanges } from './DataWindowReportRanges';
 
 interface DataWindowCardProps {
   campaignId: number;
+  compact?: boolean;
 }
 
 type LoadState =
@@ -36,7 +37,7 @@ function formatDate(iso: string | null): string {
   return iso.split('T')[0];
 }
 
-export const DataWindowCard = ({ campaignId }: DataWindowCardProps) => {
+export const DataWindowCard = ({ campaignId, compact = false }: DataWindowCardProps) => {
   const [state, setState] = useState<LoadState>({ status: 'idle' });
 
   useEffect(() => {
@@ -62,8 +63,8 @@ export const DataWindowCard = ({ campaignId }: DataWindowCardProps) => {
   }, [campaignId]);
 
   return (
-    <section className="card">
-      <h2>Report dates &amp; freshness</h2>
+    <section className={`card${compact ? ' card-compact' : ''}`}>
+      <h2>{compact ? 'Freshness' : 'Report dates & freshness'}</h2>
 
       {state.status === 'loading' && (
         <p className="status status-loading">Loading data window…</p>
@@ -91,8 +92,9 @@ export const DataWindowCard = ({ campaignId }: DataWindowCardProps) => {
               </div>
             </div>
 
-            {(state.data.recommendedAnalysisWindow.start ||
-              state.data.recommendedAnalysisWindow.end) && (
+            {!compact &&
+              (state.data.recommendedAnalysisWindow.start ||
+                state.data.recommendedAnalysisWindow.end) && (
               <div className="dw-window">
                 <span className="dw-badge-label">Recommended Analysis Window</span>
                 <span className="dw-window-range">
@@ -104,24 +106,32 @@ export const DataWindowCard = ({ campaignId }: DataWindowCardProps) => {
             )}
           </div>
 
-          <DataWindowReportRanges ranges={state.data.activeReportRanges} />
+          {compact ? (
+            state.data.notes.length > 0 && (
+              <p className="list-item-meta">{state.data.notes[0]}</p>
+            )
+          ) : (
+            <>
+              <DataWindowReportRanges ranges={state.data.activeReportRanges} />
 
-          {state.data.notes.length > 0 && (
-            <div
-              className={
-                state.data.freshnessStatus === 'STALE' ||
-                state.data.alignmentStatus === 'MISALIGNED'
-                  ? 'dw-notes dw-notes-warning'
-                  : 'dw-notes'
-              }
-            >
-              <span className="dw-section-label">Notes</span>
-              <ul className="dw-notes-list">
-                {state.data.notes.map((note, i) => (
-                  <li key={i}>{note}</li>
-                ))}
-              </ul>
-            </div>
+              {state.data.notes.length > 0 && (
+                <div
+                  className={
+                    state.data.freshnessStatus === 'STALE' ||
+                    state.data.alignmentStatus === 'MISALIGNED'
+                      ? 'dw-notes dw-notes-warning'
+                      : 'dw-notes'
+                  }
+                >
+                  <span className="dw-section-label">Notes</span>
+                  <ul className="dw-notes-list">
+                    {state.data.notes.map((note, i) => (
+                      <li key={i}>{note}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
