@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "installCommand": "npm install --prefix apps/api && npm install --prefix apps/web && npm run postinstall --prefix apps/api",
+  "buildCommand": "npm run build --prefix apps/api && npm run build --prefix apps/web",
+  "outputDirectory": "apps/web/dist",
+  "env": {
+    "DEMO_MODE": "true",
+    "NODE_ENV": "production",
+    "VITE_DEMO_MODE": "true"
+  },
+  "rewrites": [
+    { "source": "/health", "destination": "/api" },
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}

@@ -1,0 +1,38 @@
+---
+description: Core product and architecture rules for the AI Media Buyer Google Ads Campaign Intelligence OS
+alwaysApply: true
+---
+
+## AI Media Buyer – Product Definition
+
+- **Product identity**: This is a real Google Ads Campaign Intelligence OS, not a static dashboard, not a frontend-only AI mockup, and not a generic chatbot.
+- **Multi-tenant**: The system must manage multiple clients and multiple campaigns per client.
+- **Campaign memory**: The system must store campaign goals, notes, actions, and memory over time and use this history to inform recommendations.
+
+## Data & Reports
+
+- **Report ingestion**: The app must accept Google Ads CSV report uploads.
+- **Auto-detection**: The backend must detect report type automatically (e.g., search vs. PMax vs. YouTube, keyword vs. placement vs. ad-level reports).
+- **Parsing**: Reports must be parsed into strongly typed, structured data models (Prisma + TypeScript).
+- **Report awareness**: The system must track which reports have been uploaded, which are missing, and which matter by campaign type.
+- **Metrics**: Derived metrics like CTR, CPC, CPA, ROAS and other performance metrics must be computed on the backend from raw report data.
+
+## Responsibilities & Architecture
+
+- **Frontend stack**: React + Vite + TypeScript. **Never** use Next.js.
+- **Backend stack**: Express + TypeScript.
+- **Database**: Prisma + SQLite for persistence.
+- **AI boundary**: All OpenAI / AI calls happen on the backend only; **never** call OpenAI from the frontend.
+- **Secrets**: Secret keys and credentials must **never** appear in client-side code or be exposed to the browser.
+- **Backend ownership**: Backend owns parsing, persistence, context assembly, campaign memory, and all AI calls.
+- **Frontend ownership**: Frontend owns workflow UX/UI and consumption of backend APIs only; do **not** fake backend intelligence in the browser.
+
+## Campaign Intelligence Features
+
+- **Optimization recommendations**: Use server-side AI to generate professional, concrete optimization recommendations based on current + historical performance.
+- **Placements management**: Support black placements, white placements, timeline/history of changes, and persistent campaign memory that ties actions to performance over time.
+
+## Coding Standards
+
+- **Type-safety**: Use typed interfaces and modular code across frontend, backend, and Prisma models.
+- **Incremental delivery**: Preserve existing working code while building in stages; prefer additive, backwards-compatible changes over large rewrites.

@@ -1,0 +1,536 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Core entities for AI Media Buyer – Google Ads Campaign Intelligence OS.
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campaigns       Campaign[]
+  advisoryProfile ClientAdvisoryProfile?
+}
+
+/// Senior-advisor context: vertical, conversion model, maturity, spend, URL + optional LP analysis snapshot.
+model ClientAdvisoryProfile {
+  id    Int    @id @default(autoincrement())
+  clientId Int @unique
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  websiteUrl              String?
+  industryVertical        String?
+  conversionType          String?
+  accountMaturity         String?
+  approximateMonthlySpend Decimal?
+
+  /// Last structured landing-page analysis (JSON), aligned with POST /landing-page/analyze output.
+  landingPageAnalysisJson String?
+  landingPageAnalyzedAt   DateTime?
+  landingPageAnalyzedUrl  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+}
+
+model Campaign {
+  id       Int    @id @default(autoincrement())
+  clientId Int
+  client   Client @relation(fields: [clientId], references: [id])
+
+  name          String
+  /// Formerly enum CampaignType – store canonical string values (e.g. "SEARCH").
+  type          String
+  /// Formerly enum CampaignStatus – store canonical string values (e.g. "DRAFT").
+  status        String
+  monthlyBudget Decimal?
+  targetCpa     Decimal?
+  product       String?
+  productUrl    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  goals                 CampaignGoal[]
+  events                CampaignEvent[]
+  notes                 CampaignNote[]
+  uploadedReports       UploadedReport[]
+  searchTermRows        SearchTermReportRow[]
+  keywordRows           KeywordReportRow[]
+  deviceRows            DeviceReportRow[]
+  placementRows         PlacementReportRow[]
+  geographicRows        GeographicReportRow[]
+  demographicsRows      DemographicsReportRow[]
+  audienceRows          AudienceReportRow[]
+  adScheduleRows        AdScheduleReportRow[]
+  campaignSummaryRows   CampaignReportRow[]
+  analyses              CampaignAnalysis[]
+  actionPlanItems       ActionPlanItem[]
+  actionImpactSnapshots ActionImpactSnapshot[]
+  placementListEntries  PlacementListEntry[]
+  settings              CampaignSettings?
+  advisorChatMessages   CampaignAdvisorChatMessage[]
+}
+
+/// Follow-up Q&A with the campaign advisor (OpenAI), persisted per campaign.
+model CampaignAdvisorChatMessage {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  role       String
+  content    String
+  createdAt  DateTime @default(now())
+
+  @@index([campaignId, createdAt])
+}
+
+/// Type-specific JSON settings (schema versioned). At most one row per campaign.
+model CampaignSettings {
+  id                    Int      @id @default(autoincrement())
+  campaignId            Int      @unique
+  campaign              Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  settingsSchemaVersion Int      @default(1)
+  /// Stringified JSON — SQLite-safe; shape depends on campaign type + schema version.
+  settingsJson          String   @default("{}")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([campaignId])
+}
+
+model CampaignGoal {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  name        String
+  description String?
+
+  /// Formerly enum GoalMetric – store canonical string values (e.g. "CPA").
+  metric      String
+  targetValue Decimal?
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CampaignEvent {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  /// Formerly enum CampaignEventType – store canonical string values (e.g. "STATUS_CHANGED").
+  type        String
+  title       String
+  description String?
+  occurredAt  DateTime @default(now())
+
+  // Arbitrary structured data describing the event (e.g., diff, metadata), stored as serialized JSON.
+  metadataJson String?
+
+  createdAt DateTime @default(now())
+}
+
+model CampaignNote {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  author  String?
+  content String
+  pinned  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UploadedReport {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  /// Formerly enum ReportType – store canonical string values (e.g. "CAMPAIGN").
+  reportType   String
+  fileName     String
+  filePath     String
+  /// Formerly enum UploadStatus – store canonical string values (e.g. "PENDING").
+  uploadStatus String
+
+  uploadedAt  DateTime  @default(now())
+  processedAt DateTime?
+
+  /// Earliest date found in the report data rows (null if no date column detected).
+  dateRangeStart DateTime?
+  /// Latest date found in the report data rows (null if no date column detected).
+  dateRangeEnd   DateTime?
+  /// Number of data rows successfully parsed from this report.
+  rowCount       Int?
+
+  fileSizeBytes Int?
+  checksum      String?
+  errorMessage  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  searchTermRows      SearchTermReportRow[]
+  keywordRows         KeywordReportRow[]
+  deviceRows          DeviceReportRow[]
+  placementRows       PlacementReportRow[]
+  geographicRows      GeographicReportRow[]
+  demographicsRows    DemographicsReportRow[]
+  audienceRows        AudienceReportRow[]
+  adScheduleRows      AdScheduleReportRow[]
+  campaignSummaryRows CampaignReportRow[]
+}
+
+model SearchTermReportRow {
+  id               Int            @id @default(autoincrement())
+  uploadedReportId Int
+  uploadedReport   UploadedReport @relation(fields: [uploadedReportId], references: [id])
+  campaignId       Int
+  campaign         Campaign       @relation(fields: [campaignId], references: [id])
+
+  rowIndex     Int
+  searchTerm   String
+  campaignName String
+
+  clicks      Int   @default(0)
+  impressions Int   @default(0)
+  cost        Float @default(0)
+  conversions Float @default(0)
+  ctr         Float?
+  cpc         Float?
+  cpa         Float?
+
+  createdAt DateTime @default(now())
+
+  @@index([uploadedReportId])
+  @@index([campaignId])
+}
+
+model KeywordReportRow {
+  id               Int            @id @default(autoincrement())
+  uploadedReportId Int
+  uploadedReport   UploadedReport @relation(fields: [uploadedReportId], references: [id])
+  campaignId       Int
+  campaign         Campaign       @relation(fields: [campaignId], references: [id])
+
+  rowIndex     Int
+  keywordText  String
+  campaignName String
+
+  clicks      Int   @default(0)
+  impressions Int   @default(0)
+  cost        Float @default(0)
+  conversions Float @default(0)
+  ctr         Float?
+  cpc         Float?
+  cpa         Float?
+
+  createdAt DateTime @default(now())
+
+  @@index([uploadedReportId])
+  @@index([campaignId])
+}
+
+model DeviceReportRow {
+  id               Int            @id @default(autoincrement())
+  uploadedReportId Int
+  uploadedReport   UploadedReport @relation(fields: [uploadedReportId], references: [id])
+  campaignId       Int
+  campaign         Campaign       @relation(fields: [campaignId], references: [id])
+
+  rowIndex     Int
+  device       String
+  campaignName String
+
+  clicks      Int   @default(0)
+  impressions Int   @default(0)
+  cost        Float @default(0)
+  conversions Float @default(0)
+  ctr         Float?
+  cpc         Float?
+  cpa         Float?
+
+  createdAt DateTime @default(now())
+
+  @@index([uploadedReportId])
+  @@index([campaignId])
+}
+
+model PlacementReportRow {
+  id               Int            @id @default(autoincrement())
+  uploadedReportId Int
+  uploadedReport   UploadedReport @relation(fields: [uploadedReportId], references: [id])
+  campaignId       Int
+  campaign         Campaign       @relation(fields: [campaignId], references: [id])
+
+  rowIndex     Int
+  placement    String
+  displayName  String?
+  campaignName String
+
+  clicks      Int   @default(0)
+  impressions Int   @default(0)
+  cost        Float @default(0)
+  conversions Float @default(0)
+  ctr         Float?
+  cpc         Float?
+  cpa         Float?
+
+  createdAt DateTime @default(now())
+
+  @@index([uploadedReportId])
+  @@index([campaignId])
+}
+
+model GeographicReportRow {
+  id               Int            @id @default(autoincrement())
+  uploadedReportId Int
+  uploadedReport   UploadedReport @relation(fields: [uploadedReportId], references: [id])
+  campaignId       Int
+  campaign         Campaign       @relation(fields: [campaignId], references: [id])
+
+  rowIndex     Int
+  location     String
+  country      String?
+  region       String?
+  city         String?
+  campaignName String
+
+  clicks      Int   @default(0)
+  impressions Int   @default(0)
+  cost        Float @default(0)
+  conversions Float @default(0)
+  ctr         Float?
+  cpc         Float?
+  cpa         Float?
+
+  createdAt DateTime @default(now())
+
+  @@index([uploadedReportId])
+  @@index([campaignId])
+}
+
+model DemographicsReportRow {
+  id               Int            @id @default(autoincrement())
+  uploadedReportId Int
+  uploadedReport   UploadedReport @relation(fields: [uploadedReportId], references: [id])
+  campaignId       Int
+  campaign         Campaign       @relation(fields: [campaignId], references: [id])
+
+  rowIndex         Int
+  demographicType  String
+  demographicValue String
+  campaignName     String
+
+  clicks      Int   @default(0)
+  impressions Int   @default(0)
+  cost        Float @default(0)
+  conversions Float @default(0)
+  ctr         Float?
+  cpc         Float?
+  cpa         Float?
+
+  createdAt DateTime @default(now())
+
+  @@index([uploadedReportId])
+  @@index([campaignId])
+}
+
+model AudienceReportRow {
+  id               Int            @id @default(autoincrement())
+  uploadedReportId Int
+  uploadedReport   UploadedReport @relation(fields: [uploadedReportId], references: [id])
+  campaignId       Int
+  campaign         Campaign       @relation(fields: [campaignId], references: [id])
+
+  rowIndex      Int
+  audienceName  String
+  audienceType  String?
+  campaignName  String
+
+  clicks      Int   @default(0)
+  impressions Int   @default(0)
+  cost        Float @default(0)
+  conversions Float @default(0)
+  ctr         Float?
+  cpc         Float?
+  cpa         Float?
+
+  createdAt DateTime @default(now())
+
+  @@index([uploadedReportId])
+  @@index([campaignId])
+}
+
+model AdScheduleReportRow {
+  id               Int            @id @default(autoincrement())
+  uploadedReportId Int
+  uploadedReport   UploadedReport @relation(fields: [uploadedReportId], references: [id])
+  campaignId       Int
+  campaign         Campaign       @relation(fields: [campaignId], references: [id])
+
+  rowIndex     Int
+  dayOfWeek    String
+  hourOfDay    Int
+  campaignName String
+
+  clicks      Int   @default(0)
+  impressions Int   @default(0)
+  cost        Float @default(0)
+  conversions Float @default(0)
+  ctr         Float?
+  cpc         Float?
+  cpa         Float?
+
+  createdAt DateTime @default(now())
+
+  @@index([uploadedReportId])
+  @@index([campaignId])
+}
+
+model CampaignAnalysis {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  /// e.g. "full_diagnosis" – allows future expansion for different analysis types.
+  analysisType     String   @default("full_diagnosis")
+  /// "weak" | "directional" | "strong" – mirrors CampaignDiagnosis.evidenceStrength.
+  evidenceStrength String
+  /// First-class copy for quick list views without JSON parsing.
+  executiveSummary String?
+  /// Which AI model produced the analysis (e.g. "gpt-4.1-mini").
+  modelName        String?
+  /// Full CampaignDiagnosis JSON, stringified for SQLite compatibility.
+  outputJson       String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  actionPlanItems ActionPlanItem[]
+
+  @@index([campaignId])
+}
+
+model ActionPlanItem {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  /// Optional link to the analysis that produced this action.
+  analysisId Int?
+  analysis   CampaignAnalysis? @relation(fields: [analysisId], references: [id])
+
+  /// "scale" | "hold" | "pause" | "exclude" | "test" | "restructure"
+  actionType     String
+  title          String
+  rationale      String   @default("")
+  /// "high" | "medium" | "low"
+  priority       String   @default("medium")
+  /// "low" | "medium" | "high"
+  confidence     String   @default("medium")
+  /// "draft" | "approved" | "done" | "dismissed"
+  status         String   @default("draft")
+
+  notes          String?
+  expectedImpact String?
+  completedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  impactSnapshots ActionImpactSnapshot[]
+
+  @@index([campaignId])
+  @@index([analysisId])
+}
+
+model ActionImpactSnapshot {
+  id         Int      @id @default(autoincrement())
+  actionId   Int
+  action     ActionPlanItem @relation(fields: [actionId], references: [id])
+  campaignId Int
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  /// "before" | "after"
+  snapshotType String
+  capturedAt   DateTime @default(now())
+
+  /// Metrics captured at time of snapshot (stringified JSON for SQLite compatibility).
+  metricsJson String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([campaignId])
+  @@index([actionId])
+  @@index([actionId, snapshotType])
+}
+
+model CampaignReportRow {
+  id               Int            @id @default(autoincrement())
+  uploadedReportId Int
+  uploadedReport   UploadedReport @relation(fields: [uploadedReportId], references: [id])
+  campaignId       Int
+  campaign         Campaign       @relation(fields: [campaignId], references: [id])
+
+  rowIndex         Int
+  campaignName     String
+
+  clicks          Int   @default(0)
+  impressions     Int   @default(0)
+  cost            Float @default(0)
+  conversions     Float @default(0)
+  conversionValue Float @default(0)
+  ctr             Float?
+  cpc             Float?
+  cpa             Float?
+  roas            Float?
+
+  createdAt DateTime @default(now())
+
+  @@index([uploadedReportId])
+  @@index([campaignId])
+}
+
+model PlacementListEntry {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+
+  /// "blacklist" | "whitelist"
+  listType    String
+  /// The placement identifier (URL, app ID, channel, etc.)
+  placement   String
+  displayName String?
+  /// "manual" | "ai" | "imported"
+  source      String   @default("manual")
+  reason      String?
+  /// "active" | "archived"
+  status      String   @default("active")
+
+  /// Optional link to the AI analysis that suggested this entry.
+  analysisId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([campaignId])
+  @@index([campaignId, listType])
+}
