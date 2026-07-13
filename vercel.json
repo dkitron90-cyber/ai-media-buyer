@@ -1,8 +1,15 @@
 {
   "version": 2,
-  "installCommand": "npm install && npm install --prefix apps/api && npm install --prefix apps/web && npm run postinstall --prefix apps/api",
+  "installCommand": "npm install && npm install --prefix apps/api && npm install --prefix apps/web",
   "buildCommand": "npm run build --prefix apps/api && npm run build --prefix apps/web",
   "outputDirectory": "apps/web/dist",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "apps/api/{dist/**,prisma/demo.db,node_modules/.prisma/**,node_modules/@prisma/**}",
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
   "env": {
     "DEMO_MODE": "true",
     "NODE_ENV": "production",

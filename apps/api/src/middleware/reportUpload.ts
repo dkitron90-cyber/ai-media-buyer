@@ -1,13 +1,11 @@
-import fs from 'fs';
-import path from 'path';
 import multer from 'multer';
+import { ensureUploadsDirSync, getUploadsDir } from '../lib/runtimePaths';
 
-const uploadsDir = path.resolve(process.cwd(), 'uploads');
-fs.mkdirSync(uploadsDir, { recursive: true });
+ensureUploadsDirSync();
 
 const storage = multer.diskStorage({
   destination: (_req, _file, callback) => {
-    callback(null, uploadsDir);
+    callback(null, getUploadsDir());
   },
   filename: (_req, file, callback) => {
     const timestamp = Date.now();

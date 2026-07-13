@@ -13,6 +13,7 @@ import { parseReportByType } from './reportParsingService';
 import { inferFileMappingWithAi, buildAiPreviewFromMetadata, type AiFileMappingResult, type AiCanonicalColumnKey } from './aiFileMappingService';
 import { normalizeHeader } from '../lib/csv';
 import { normalizeAndMapHeaders } from '../lib/headerNormalizer';
+import { ensureUploadsDir, getUploadsDir } from '../lib/runtimePaths';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -208,7 +209,8 @@ const buildAiMappedTempCsvFile = async (args: {
     outputLines.push(serializeCsvRow(cells));
   }
 
-  const uploadsDir = path.resolve(process.cwd(), 'uploads');
+  await ensureUploadsDir();
+  const uploadsDir = getUploadsDir();
   const safeBase = originalFileName.trim().replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
   const tempName = `${Date.now()}-${safeBase}-ai-mapped`;
   const tempFilePath = path.join(uploadsDir, tempName);

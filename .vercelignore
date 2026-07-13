@@ -1,0 +1,7 @@
+.env
+.env.*
+apps/api/.env
+apps/web/.env
+**/node_modules
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep

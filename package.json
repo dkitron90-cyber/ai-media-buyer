@@ -9,10 +9,21 @@
     "build": "npm run build --prefix apps/api && npm run build --prefix apps/web",
     "demo:seed": "npm run demo:seed --prefix apps/api",
     "test": "npm test --prefix apps/api",
-    "typecheck": "npm run typecheck --prefix apps/web && npx tsc --noEmit -p apps/api/tsconfig.json"
+    "typecheck": "npm run typecheck --prefix apps/web && npx tsc --noEmit -p apps/api/tsconfig.json",
+    "postinstall": "prisma generate --schema=apps/api/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "@types/multer": "^2.1.0",
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "multer": "^2.1.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
-    "@vercel/node": "^3.2.0"
+    "@vercel/node": "^3.2.0",
+    "prisma": "^5.20.0"
   }
 }
