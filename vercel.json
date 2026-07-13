@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm install --prefix apps/api && npm install --prefix apps/web && npm run postinstall --prefix apps/api",
+  "installCommand": "npm install && npm install --prefix apps/api && npm install --prefix apps/web && npm run postinstall --prefix apps/api",
   "buildCommand": "npm run build --prefix apps/api && npm run build --prefix apps/web",
   "outputDirectory": "apps/web/dist",
   "env": {
