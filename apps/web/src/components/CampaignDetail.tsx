@@ -5,6 +5,7 @@ import { CampaignHeader } from './CampaignHeader';
 import { ExecutionTabs } from './ExecutionTabs';
 import { CampaignDataSection } from './CampaignDataSection';
 import { CampaignPlaybookSurface } from './CampaignPlaybookSurface';
+import { CampaignImpactSurface } from './CampaignImpactSurface';
 import type { ExperienceMode } from '../lib/experienceMode';
 
 interface CampaignDetailProps {
@@ -127,6 +128,11 @@ export const CampaignDetail = ({
         onDelete={onDeleteCampaign}
       />
 
+      <CampaignImpactSurface
+        campaignId={campaign.id}
+        refreshTrigger={historyRefresh}
+      />
+
       <div className="campaign-detail-cards-row">
         <CampaignPlaybookSurface
           campaignId={campaign.id}
@@ -147,13 +153,13 @@ export const CampaignDetail = ({
           )}
           <ExecutionTabs
             campaignId={campaign.id}
+            campaignType={campaign.type}
             refreshTrigger={historyRefresh}
             highlightActionIds={highlightActionIds}
             onRunAnalysis={handleRunAnalysis}
             runningAnalysis={analyzeRunning}
             onPlanMutate={handlePlanMutate}
             compact
-            compactEmpty
           />
         </div>
       </div>

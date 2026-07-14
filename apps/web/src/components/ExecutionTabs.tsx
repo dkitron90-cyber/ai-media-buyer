@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { AnalyzeCampaignResponse } from '../lib/apiClient';
 import { CampaignActions } from './CampaignActions';
 import { PlacementManager } from './PlacementManager';
@@ -7,6 +7,7 @@ export type ExecutionTabId = 'actions' | 'placements';
 
 export interface ExecutionTabsProps {
   campaignId: number;
+  campaignType?: string;
   refreshTrigger: number;
   highlightActionIds?: number[];
   onRunAnalysis: () => Promise<AnalyzeCampaignResponse | undefined>;
@@ -21,6 +22,7 @@ export interface ExecutionTabsProps {
 
 export const ExecutionTabs = ({
   campaignId,
+  campaignType,
   refreshTrigger,
   highlightActionIds,
   onRunAnalysis,
@@ -29,7 +31,13 @@ export const ExecutionTabs = ({
   compact = false,
   compactEmpty = false,
 }: ExecutionTabsProps) => {
-  const [tab, setTab] = useState<ExecutionTabId>('actions');
+  const preferredTab: ExecutionTabId =
+    campaignType === 'DISPLAY' ? 'placements' : 'actions';
+  const [tab, setTab] = useState<ExecutionTabId>(preferredTab);
+
+  useEffect(() => {
+    setTab(campaignType === 'DISPLAY' ? 'placements' : 'actions');
+  }, [campaignId, campaignType]);
 
   return (
     <section

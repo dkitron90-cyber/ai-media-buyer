@@ -804,7 +804,7 @@ export const App = () => {
       return 'Create and manage advertiser accounts';
     }
     if (activeNav === 'dashboard') {
-      return 'Quick start — clients, imports, and new campaigns';
+      return 'Operating book — attention, CPA, and campaign intelligence';
     }
     if (activeNav === 'portfolio') {
       return 'Health and performance across your full book';
@@ -1013,6 +1013,14 @@ export const App = () => {
       <main ref={mainRef} className="app-main" id="dashboard-main">
         <DemoBanner
           health={health.status === 'success' ? health.data : null}
+          onOpenHeroCampaign={() => {
+            const hero =
+              allCampaignsList.find((c) => c.name === 'Brand Search US') ??
+              allCampaignsList[0];
+            if (hero) openCampaignWorkspace(hero.id);
+            else goCampaigns();
+          }}
+          onOpenPortfolio={goPortfolioOverview}
         />
 
         <header className="main-header">
@@ -1063,31 +1071,158 @@ export const App = () => {
           <div className="dashboard-page">
             <section
               className="dashboard-section"
+              aria-labelledby="dashboard-ops-heading"
+            >
+              <div className="dashboard-section__head">
+                <h2 id="dashboard-ops-heading" className="dashboard-section__title">
+                  Operating book
+                </h2>
+                <p className="dashboard-section__lede">
+                  Demo Brand Co. — live readiness, attention flags, and campaign
+                  workspaces with seeded AI diagnoses.
+                </p>
+              </div>
+              <div
+                className="dashboard-stats"
+                aria-label="Portfolio overview"
+                id="dashboard-stats"
+              >
+                <div className="dashboard-stat-card">
+                  <div className="dashboard-stat-card__top">
+                    <span className="dashboard-stat-card__icon" aria-hidden>
+                      <StatIconUsers />
+                    </span>
+                    <span className="dashboard-stat-label">Clients</span>
+                  </div>
+                  <span className="dashboard-stat-value">{clients.length}</span>
+                </div>
+                <div className="dashboard-stat-card">
+                  <div className="dashboard-stat-card__top">
+                    <span className="dashboard-stat-card__icon" aria-hidden>
+                      <StatIconMegaphone />
+                    </span>
+                    <span className="dashboard-stat-label">Campaigns</span>
+                  </div>
+                  <span className="dashboard-stat-value">
+                    {portfolioTotalCount ?? allCampaignsList.length}
+                  </span>
+                </div>
+                <div className="dashboard-stat-card dashboard-stat-card--attention">
+                  <div className="dashboard-stat-card__top">
+                    <span
+                      className="dashboard-stat-card__icon dashboard-stat-card__icon--amber"
+                      aria-hidden
+                    >
+                      <StatIconAlert />
+                    </span>
+                    <span className="dashboard-stat-label">Needs attention</span>
+                  </div>
+                  <span className="dashboard-stat-value">
+                    {portfolioStatsLoading ? '…' : (portfolioNeedsAttention ?? '—')}
+                  </span>
+                  <span className="dashboard-stat-sub">Gaps across the book</span>
+                </div>
+                <div className="dashboard-stat-card dashboard-stat-card--success">
+                  <div className="dashboard-stat-card__top">
+                    <span
+                      className="dashboard-stat-card__icon dashboard-stat-card__icon--green"
+                      aria-hidden
+                    >
+                      <StatIconCheck />
+                    </span>
+                    <span className="dashboard-stat-label">Performing well</span>
+                  </div>
+                  <span className="dashboard-stat-value">
+                    {portfolioStatsLoading ? '…' : (portfolioPerformingWell ?? '—')}
+                  </span>
+                  <span className="dashboard-stat-sub">No urgent gaps</span>
+                </div>
+                <div className="dashboard-stat-card dashboard-stat-card--metric">
+                  <div className="dashboard-stat-card__top">
+                    <span className="dashboard-stat-card__icon" aria-hidden>
+                      <StatIconDollar />
+                    </span>
+                    <span className="dashboard-stat-label">Blended CPA</span>
+                  </div>
+                  <span className="dashboard-stat-value">
+                    {portfolioStatsLoading ? '…' : (portfolioBlendedCpa ?? '—')}
+                  </span>
+                  <span className="dashboard-stat-sub">From parsed reports</span>
+                </div>
+              </div>
+            </section>
+
+            <section
+              className="dashboard-section"
+              aria-labelledby="dashboard-spotlight-heading"
+            >
+              <div className="dashboard-section__head">
+                <h2 id="dashboard-spotlight-heading" className="dashboard-section__title">
+                  Feature spotlight
+                </h2>
+                <p className="dashboard-section__lede">
+                  Jump into each campaign type to see the intelligence layer in action.
+                </p>
+              </div>
+              <div className="dashboard-spotlight-grid">
+                {[
+                  {
+                    name: 'Brand Search US',
+                    type: 'SEARCH',
+                    blurb:
+                      'AI diagnosis + negative keyword actions + before/after CPA impact.',
+                  },
+                  {
+                    name: 'Display Remarketing',
+                    type: 'DISPLAY',
+                    blurb:
+                      'Placement blacklist / whitelist memory sourced from AI and manual review.',
+                  },
+                  {
+                    name: 'PMax - Shoes',
+                    type: 'PERFORMANCE_MAX',
+                    blurb:
+                      'Readiness gaps, hold-budget guidance, and type-specific playbook.',
+                  },
+                ].map((spot) => {
+                  const campaign = allCampaignsList.find((c) => c.name === spot.name);
+                  return (
+                    <button
+                      key={spot.name}
+                      type="button"
+                      className="dashboard-spotlight-card"
+                      disabled={!campaign}
+                      onClick={() => {
+                        if (campaign) openCampaignWorkspace(campaign.id);
+                      }}
+                    >
+                      <span className="dashboard-spotlight-card__type">
+                        {spot.type.replace(/_/g, ' ')}
+                      </span>
+                      <span className="dashboard-spotlight-card__title">{spot.name}</span>
+                      <span className="dashboard-spotlight-card__blurb">{spot.blurb}</span>
+                      <span className="dashboard-spotlight-card__cta">
+                        {campaign ? 'Open workspace →' : 'Loading…'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section
+              className="dashboard-section"
               aria-labelledby="dashboard-actions-heading"
             >
               <div className="dashboard-section__head">
                 <h2 id="dashboard-actions-heading" className="dashboard-section__title">
-                  Get started
+                  Quick actions
                 </h2>
                 <p className="dashboard-section__lede">
-                  Upload reports, track campaign memory, and get AI-backed optimization
-                  recommendations.
+                  Import reports, compare campaigns, or review the full portfolio roster.
                 </p>
               </div>
               <div className="dashboard-quick-actions" aria-label="Quick actions">
-                <button
-                  type="button"
-                  className="dashboard-action-card"
-                  onClick={handleQuickNewClient}
-                >
-                  <span className="dashboard-action-card__icon" aria-hidden>
-                    <StatIconUsers />
-                  </span>
-                  <span className="dashboard-action-card__title">Add client</span>
-                  <span className="dashboard-action-card__desc">
-                    Create a new advertiser account
-                  </span>
-                </button>
                 <button
                   type="button"
                   className="dashboard-action-card"
@@ -1101,23 +1236,7 @@ export const App = () => {
                   </span>
                   <span className="dashboard-action-card__title">Import report</span>
                   <span className="dashboard-action-card__desc">
-                    Upload Google Ads CSV exports
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="dashboard-action-card"
-                  onClick={handleQuickNewCampaign}
-                  disabled={!selectedClientId}
-                >
-                  <span className="dashboard-action-card__icon" aria-hidden>
-                    <ActionIconPlus />
-                  </span>
-                  <span className="dashboard-action-card__title">New campaign</span>
-                  <span className="dashboard-action-card__desc">
-                    {selectedClient
-                      ? `For ${selectedClient.name}`
-                      : 'Select a client first'}
+                    CSV wizard with auto type detection
                   </span>
                 </button>
                 <button
@@ -1126,11 +1245,11 @@ export const App = () => {
                   onClick={goPortfolioOverview}
                 >
                   <span className="dashboard-action-card__icon" aria-hidden>
-                    <StatIconDollar />
+                    <StatIconPulse />
                   </span>
                   <span className="dashboard-action-card__title">Portfolio</span>
                   <span className="dashboard-action-card__desc">
-                    Health across all campaigns
+                    Health table across all campaigns
                   </span>
                 </button>
                 <button
@@ -1143,7 +1262,7 @@ export const App = () => {
                   </span>
                   <span className="dashboard-action-card__title">Compare</span>
                   <span className="dashboard-action-card__desc">
-                    Two campaigns side by side
+                    Side-by-side campaign metrics
                   </span>
                 </button>
               </div>
